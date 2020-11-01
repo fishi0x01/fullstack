@@ -1,0 +1,60 @@
+---
+# https://medium.com/flutter-community/run-flutter-driver-tests-on-github-actions-13c639c7e4ab
+name: CI - Flutter
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  android:
+    strategy:
+      fail-fast: false
+      matrix:
+        device:
+          - "pixel_xl"
+    runs-on: macOS-latest
+    steps:
+      - uses: actions/checkout@v1
+      - uses: subosito/flutter-action@v1
+        with:
+          flutter-version: '1.22.3'
+          channel: 'stable'
+      - name: "Run emulator tests"
+        timeout-minutes: 15
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          disable-animations: false
+          profile: ${{ matrix.device }}
+          script: "make mobile-flutter-integration-tests"
+
+  ios:
+    strategy:
+      matrix:
+        device:
+          - "iPhone 8 (14.0)"
+      fail-fast: false
+    runs-on: macOS-latest
+    steps:
+      - name: "List all simulators"
+        run: "xcrun xctrace list devices"
+      - name: "Start Simulator"
+        timeout-minutes: 10
+        run: |
+          UDID=$(
+            xcrun instruments -s |
+            awk \
+              -F ' *[][]' \
+              -v 'device=${{ matrix.device }}' \
+              '$1 == device { print $2 }'
+          )
+          xcrun simctl boot "${UDID:?No Simulator with this name found}"
+      - uses: actions/checkout@v1
+      - uses: subosito/flutter-action@v1
+        with:
+          flutter-version: '1.22.3'
+          channel: 'stable'
+      - name: "Run Flutter Driver tests"
+        run: "make mobile-flutter-integration-tests"
