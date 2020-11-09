@@ -1,7 +1,9 @@
 # flutter_app
 
-Default Flutter application.
+Default Flutter application. Code is in `lib/` directory. Assets under `assets/`.
 
-## Features
+## Design
 
 - sqlite DB provider including migration mechanism
+- bloc pattern
+- repository pattern

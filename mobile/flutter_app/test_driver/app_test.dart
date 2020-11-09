@@ -1,3 +1,4 @@
+import 'package:flutter_app/keys/counter.dart';
 import 'package:flutter_driver/flutter_driver.dart';
 import 'package:test/test.dart';
 
@@ -5,8 +6,8 @@ void main() {
   group('Flutter App', () {
     FlutterDriver driver;
 
-    final counterTextFinder = find.byValueKey('counter');
-    final buttonFinder = find.byValueKey('increment');
+    final counterTextFinder = find.byValueKey(keyCounterValue);
+    final buttonFinder = find.byValueKey(keyCounterIncrement);
 
     // Connect to the Flutter driver before running any tests.
     setUpAll(() async {

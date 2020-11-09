@@ -6,13 +6,21 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'model.dart';
+import 'package:flutter_app/model/counter.dart';
 
 class DBProvider {
   Future<Database> database;
   static const DATABASE_NAME = 'app_database.db';
-  static const DATA_TABLE = 'data';
+  static const DATA_TABLE = 'counter';
   static const DB_MIGRATIONS_DIR = 'assets/db/migrations';
+
+  static final DBProvider _dbProvider = new DBProvider._internal();
+
+  static DBProvider instance() {
+    return _dbProvider;
+  }
+
+  DBProvider._internal();
 
   Future<void> open(int version) async {
     this.database = openDatabase(
@@ -38,45 +46,46 @@ class DBProvider {
     );
   }
 
-  Future<void> insertData(Data data) async {
+  Future<void> insertCounter(Counter counter) async {
     Database db = await this.database;
 
-    // Insert the Question into the correct table. You might also specify the
+    // Insert into the correct table. You might also specify the
     // `conflictAlgorithm` to use in case the same dog is inserted twice.
     //
     // In this case, ignore.
     await db.insert(
       DATA_TABLE,
-      data.toMap(),
+      counter.toMap(),
       conflictAlgorithm: ConflictAlgorithm.ignore,
     );
   }
 
-  Future<void> updateQuestion(Data data) async {
+  Future<void> updateData(Counter counter) async {
     Database db = await this.database;
 
     await db.update(
       DATA_TABLE,
-      data.toMap(),
-      // Ensure that the Question has a matching id.
+      counter.toMap(),
+      // Ensure matching id.
       where: "id = ?",
-      // Pass the Question's id as a whereArg to prevent SQL injection.
-      whereArgs: [data.id],
+      // Pass id as a whereArg to prevent SQL injection.
+      whereArgs: [counter.id],
     );
 
-    developer.log('Updated data ${data.id} with text: ${data.text}', name: 'db.updateData');
+    developer.log('Updated object at id ${counter.id} with name: ${counter.name} and value: ${counter.val}', name: 'db.updateData');
   }
 
-  Future<List<Data>> allData() async {
+  Future<List<Counter>> allCounters() async {
     final Database db = await this.database;
     final List<Map<String, dynamic>> maps = await db.query(DATA_TABLE);
 
-    developer.log('Total # of data: ${maps.length}', name: 'db.queryData');
+    developer.log('Total # of objects in table: ${maps.length}', name: 'db.queryData');
 
     return List.generate(maps.length, (i) {
-      return Data(
+      return Counter(
         id: maps[i]['id'],
-        text: maps[i]['text'],
+        name: maps[i]['name'],
+        val: maps[i]['val'],
       );
     });
   }
